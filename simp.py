@@ -1,4 +1,3 @@
-import re
 import operator
 
 operators = {"+": operator.add, "-": operator.sub, "/": operator.truediv, "*": operator.mul}
@@ -63,6 +62,9 @@ def run():
 
     if len(control) > 0:
         run()
+
+
+# Tests
 
 exp1 = Expr(12)
 exp2 = Expr(13)
