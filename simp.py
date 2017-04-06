@@ -5,8 +5,7 @@ operators = {"+": operator.add, "-": operator.sub, "/": operator.truediv, "*": o
 
 control = []
 results = []
-memory = dict()
-
+memory = []
 
 class Expr:
     num = None
@@ -35,6 +34,15 @@ class Op:
         return operators[self.op](int(num1), int(num2))
 
 
+class Var:
+    location = None
+    value = None
+
+    def __init__(self, val, loc):
+        self.value = val
+        self.location = "!" + loc
+
+
 def run():
     exp = control.pop()
     if type(exp) is ExprOpExpr:
@@ -47,6 +55,11 @@ def run():
 
     elif type(exp) is Expr:
         results.append(exp)
+
+    elif type(exp) is str:
+        for var in memory:
+            if var.location == exp:
+                results.append(var.value)
 
     if len(control) > 0:
         run()
@@ -65,9 +78,17 @@ exprsub1 = ExprOpExpr(exp5, op2, exp6)
 exprsub2 = ExprOpExpr(exp3, op2, exp4)
 expr2 = ExprOpExpr(exprsub1, op2, exp3)
 
+kurwa = Var("kurwidol", "kurwa")
+
+memory.append(kurwa)
+
+control.append("!kurwa")
 control.append(expr2)
 
 run()
 
 for result in results:
-    print(result.num)
+    if (type(result) is Expr):
+        print(result.num)
+    else:
+        print (result)
