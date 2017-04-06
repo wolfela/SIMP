@@ -35,10 +35,13 @@ def checkFront():
             push(control, sign[0])
             push(control, digits[1])
             push(control, digits[0])
+
         elif patternSign.match(current):
             push(results, str(evaluate(current, pop(control), pop(control))))
+
         elif patternValue.match(current):
             push(results, memory.get(current))
+            
         elif patternDigit.match(current):
             push(results, current)
 
