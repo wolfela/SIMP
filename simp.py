@@ -1,10 +1,12 @@
 import operator
 
 operators = {"+": operator.add, "-": operator.sub, "/": operator.truediv, "*": operator.mul}
+boperators = {">": operator.ge, "<": operator.le, "=": operator.eq}
 
 control = []
 results = []
 memory = []
+
 
 class Expr:
     num = None
@@ -33,6 +35,62 @@ class Op:
         return operators[self.op](int(num1), int(num2))
 
 
+class Bool:
+    value = None
+
+    def __init__(self, val):
+        self.value = val
+
+
+class Bop:
+    bop = None
+
+    def __init__(self, op):
+        self.bop = op
+
+    def eval(self, num1, num2):
+        return boperators[self.bop](int(num1), int(num2))
+
+
+class NotExpr(Bool):
+    value = None
+
+    def __init__(self, val):
+        self.value = val
+
+
+class AndExpr(Bool):
+    right = None
+    left = None
+
+    def __init__(self, bool1, bool2):
+        self.left = bool1
+        self.right = bool2
+
+
+class And:
+
+    def eval(self, left, right):
+        return left.value and right.value
+
+
+class Not:
+
+    def eval(self, expr):
+        return not expr.value
+
+
+
+class ExprBopExpr(Bool):
+    left = None
+    right = None
+
+    def __init__(self, op, expr1, expr2):
+        self.left = expr1
+        self.right = expr2
+        self.bop = op
+
+
 class Var:
     location = None
     value = None
@@ -49,10 +107,36 @@ def run():
         control.append(exp.left)
         control.append(exp.right)
 
+    elif type(exp) is ExprBopExpr:
+        control.append(exp.bop)
+        control.append(exp.left)
+        control.append(exp.right)
+
+    elif type(exp) is AndExpr:
+        control.append(And())
+        control.append(exp.left)
+        control.append(exp.right)
+
+    elif type(exp) is NotExpr:
+        control.append(Not())
+        control.append(exp.value)
+
+    elif type(exp) is And:
+        results.append(Bool(And.eval(exp, Bool(results.pop().value), Bool(results.pop().value))))
+
+    elif type(exp) is Not:
+        results.append(Bool(Not.eval(exp, Bool(results.pop().value))))
+
+    elif type(exp) is Bop:
+        results.append(Bool(Bop.eval(exp, int(results.pop().num), int(results.pop().num))))
+
     elif type(exp) is Op:
         results.append(Expr(Op.eval(exp, int(results.pop().num), int(results.pop().num))))
 
     elif type(exp) is Expr:
+        results.append(exp)
+
+    elif type(exp) is Bool:
         results.append(exp)
 
     elif type(exp) is str:
@@ -66,31 +150,26 @@ def run():
 
 # Tests
 
-exp1 = Expr(12)
-exp2 = Expr(13)
-op1 = Op("+")
-expr1 = ExprOpExpr(exp1, op1, exp2)
+bool1 = Bool(True)
+bool2 = Bool(True)
+expr1 = Expr(1)
+expr2 = Expr(2)
+bop1 = Bop("<")
+comp1 = ExprBopExpr(bop1, expr1, expr2)
+and1 = AndExpr(bool1, bool2)
+not1 = NotExpr(bool1)
 
-exp3 = Expr(8)
-exp4 = Expr(9)
-op2 = Op("*")
-exp5 = Expr(7)
-exp6 = Expr(6)
-exprsub1 = ExprOpExpr(exp5, op2, exp6)
-exprsub2 = ExprOpExpr(exp3, op2, exp4)
-expr2 = ExprOpExpr(exprsub1, op2, exp3)
-
-kurwa = Var("kurwidol", "kurwa")
-
-memory.append(kurwa)
-
-control.append("!kurwa")
-control.append(expr2)
+control.append(comp1)
+control.append(and1)
+control.append(not1)
 
 run()
 
 for result in results:
-    if (type(result) is Expr):
+    if type(result) is Expr:
         print(result.num)
+    elif type(result) is Bool:
+        print(result.value)
     else:
-        print (result)
+        print(result)
+
